@@ -1,0 +1,68 @@
+name: Train
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      epochs:
+        description: Base training epochs
+        required: true
+        default: '30'
+        type: number
+      rounds:
+        description: Self-improvement rounds
+        required: true
+        default: '8'
+        type: number
+      d_model:
+        description: Model width
+        required: true
+        default: '64'
+        type: number
+      n_layers:
+        description: Transformer layers
+        required: true
+        default: '3'
+        type: number
+      d_ff:
+        description: FFN width
+        required: true
+        default: '128'
+        type: number
+      n_heads:
+        description: Attention heads
+        required: true
+        default: '4'
+        type: number
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run self-improving LLM (~100k params)
+        run: |
+          python improve.py \
+            --d-model ${{ inputs.d_model }} \
+            --n-layers ${{ inputs.n_layers }} \
+            --n-heads ${{ inputs.n_heads }} \
+            --d-ff ${{ inputs.d_ff }} \
+            --epochs ${{ inputs.epochs }} \
+            --rounds ${{ inputs.rounds }} \
+            --save model.json 2>&1 | tee training.log
+
+      - name: Upload weights + log
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-model
+          path: |
+            model.json
+            training.log
+          retention-days: 30
