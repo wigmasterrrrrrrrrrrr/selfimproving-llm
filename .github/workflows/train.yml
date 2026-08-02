@@ -50,12 +50,12 @@ jobs:
       - name: Run self-improving LLM (~100k params)
         run: |
           python improve.py \
-            --d-model ${{ inputs.d_model }} \
-            --n-layers ${{ inputs.n_layers }} \
-            --n-heads ${{ inputs.n_heads }} \
-            --d-ff ${{ inputs.d_ff }} \
-            --epochs ${{ inputs.epochs }} \
-            --rounds ${{ inputs.rounds }} \
+            --d-model ${{ inputs.d_model || '64' }} \
+            --n-layers ${{ inputs.n_layers || '3' }} \
+            --n-heads ${{ inputs.n_heads || '4' }} \
+            --d-ff ${{ inputs.d_ff || '128' }} \
+            --epochs ${{ inputs.epochs || '30' }} \
+            --rounds ${{ inputs.rounds || '8' }} \
             --save model.json 2>&1 | tee training.log
 
       - name: Upload weights + log
